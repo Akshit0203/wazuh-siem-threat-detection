@@ -1,0 +1,25 @@
+<!--
+  Custom decoders — /var/ossec/etc/decoders/local_decoder.xml  (on the MANAGER)
+
+  Decoders extract fields from raw log lines so rules can match on them. Below is an
+  example for a non-standard application log. After editing, validate and restart:
+
+      /var/ossec/bin/wazuh-logtest        # paste a sample line to test
+      sudo systemctl restart wazuh-manager
+
+  Example target log line (from /var/log/myapp/app.log):
+      2025-11-15 10:42:07 myapp AUTH user=jdoe action=login result=FAILED srcip=203.0.113.44
+-->
+
+<!-- Parent decoder: anchor on the program name "myapp" -->
+<decoder name="myapp">
+  <program_name>^myapp</program_name>
+</decoder>
+
+<!-- Child decoder: pull out the security-relevant fields -->
+<decoder name="myapp-auth">
+  <parent>myapp</parent>
+  <prematch>AUTH </prematch>
+  <regex offset="after_prematch">user=(\S+) action=(\S+) result=(\S+) srcip=(\d+.\d+.\d+.\d+)</regex>
+  <order>user, action, status, srcip</order>
+</decoder>

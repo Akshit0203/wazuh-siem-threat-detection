@@ -1,0 +1,39 @@
+# --- Wazuh / exported data (do not commit real environment data) ---
+*.log
+alerts.json
+alerts.log
+archives.json
+archives.log
+*.pcap
+exported-*.csv
+*-report.pdf
+
+# --- Secrets / credentials (never commit) ---
+*.key
+*.pem
+*.crt
+*.p12
+authd.pass
+wazuh-install-files.tar
+*.secret
+.env
+
+# --- OS / editor cruft ---
+.DS_Store
+Thumbs.db
+desktop.ini
+*~
+.vscode/
+.idea/
+
+# --- Python (if used for tooling) ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# --- Archives / installers ---
+*.gz
+*.tgz
+*.zip
+wazuh-install.sh

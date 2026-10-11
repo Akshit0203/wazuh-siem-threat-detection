@@ -1,0 +1,72 @@
+<!--
+  Windows Wazuh agent configuration (excerpt).
+
+  Merge these blocks into C:\Program Files (x86)\ossec-agent\ossec.conf and restart the agent:
+
+      Restart-Service -Name WazuhSvc
+
+  Fields to change for your environment are marked with CHANGE-ME.
+-->
+
+<ossec_config>
+
+  <!-- ===== Point the agent at the manager ===== -->
+  <client>
+    <server>
+      <address>CHANGE-ME-MANAGER-IP</address>
+      <port>1514</port>
+      <protocol>tcp</protocol>
+    </server>
+    <notify_time>60</notify_time>
+    <time-reconnect>120</time-reconnect>
+  </client>
+
+  <!-- ===== Windows Event Channels (modern logging) ===== -->
+  <localfile>
+    <location>Security</location>
+    <log_format>eventchannel</log_format>
+    <!-- Keep logon success/failure, account mgmt, privilege use -->
+    <query>Event/System[EventID=4624 or EventID=4625 or EventID=4634 or
+           EventID=4648 or EventID=4672 or EventID=4720 or EventID=4722 or
+           EventID=4724 or EventID=4725 or EventID=4726 or EventID=4732 or
+           EventID=4740]</query>
+  </localfile>
+
+  <localfile>
+    <location>System</location>
+    <log_format>eventchannel</log_format>
+  </localfile>
+
+  <localfile>
+    <location>Application</location>
+    <log_format>eventchannel</log_format>
+  </localfile>
+
+  <!-- If Sysmon is installed, ingest its operational channel for rich telemetry -->
+  <localfile>
+    <location>Microsoft-Windows-Sysmon/Operational</location>
+    <log_format>eventchannel</log_format>
+  </localfile>
+
+  <!-- PowerShell script-block logging -->
+  <localfile>
+    <location>Microsoft-Windows-PowerShell/Operational</location>
+    <log_format>eventchannel</log_format>
+  </localfile>
+
+  <!-- ===== File Integrity Monitoring on Windows ===== -->
+  <syscheck>
+    <disabled>no</disabled>
+    <frequency>43200</frequency>
+
+    <directories check_all="yes" realtime="yes">C:\Windows\System32\drivers\etc</directories>
+    <directories check_all="yes" realtime="yes" report_changes="yes">C:\Users\Public\Documents</directories>
+
+    <!-- Monitor key autorun registry locations -->
+    <windows_registry>HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Run</windows_registry>
+    <windows_registry>HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\RunOnce</windows_registry>
+
+    <alert_new_files>yes</alert_new_files>
+  </syscheck>
+
+</ossec_config>

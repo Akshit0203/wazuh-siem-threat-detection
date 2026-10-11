@@ -1,0 +1,78 @@
+<!--
+  Linux Wazuh agent configuration (excerpt).
+
+  This is NOT a full ossec.conf. These are the blocks that were added/edited on the
+  Linux agents (ubuntuvm / centosvm) for this lab. Merge them into the relevant sections
+  of /var/ossec/etc/ossec.conf, then restart the agent:
+
+      sudo systemctl restart wazuh-agent
+
+  Fields to change for your environment are marked with CHANGE-ME.
+-->
+
+<ossec_config>
+
+  <!-- ===== Point the agent at the manager ===== -->
+  <client>
+    <server>
+      <address>CHANGE-ME-MANAGER-IP</address>   <!-- e.g. 192.168.56.10 -->
+      <port>1514</port>
+      <protocol>tcp</protocol>
+    </server>
+    <notify_time>60</notify_time>
+    <time-reconnect>120</time-reconnect>
+  </client>
+
+  <!-- ===== Log collection: standard Linux sources ===== -->
+  <localfile>
+    <log_format>syslog</log_format>
+    <location>/var/log/auth.log</location>   <!-- Debian/Ubuntu: SSH, sudo, PAM -->
+  </localfile>
+
+  <localfile>
+    <log_format>syslog</log_format>
+    <location>/var/log/secure</location>     <!-- RHEL/CentOS: SSH, sudo, PAM -->
+  </localfile>
+
+  <localfile>
+    <log_format>syslog</log_format>
+    <location>/var/log/syslog</location>
+  </localfile>
+
+  <!-- Example: a custom application log parsed by local_decoder.xml -->
+  <localfile>
+    <log_format>syslog</log_format>
+    <location>/var/log/myapp/app.log</location>
+  </localfile>
+
+  <!-- ===== File Integrity Monitoring (syscheck) ===== -->
+  <syscheck>
+    <disabled>no</disabled>
+
+    <!-- Full scan frequency (seconds). 12h here; lower it in the lab to see results faster. -->
+    <frequency>43200</frequency>
+
+    <!-- Real-time + report who changed the file (requires the audit package) -->
+    <directories check_all="yes" realtime="yes" report_changes="yes" whodata="yes">/etc</directories>
+    <directories check_all="yes" realtime="yes" report_changes="yes" whodata="yes">/data</directories>
+    <directories check_all="yes" realtime="yes">/bin,/sbin,/usr/bin,/usr/sbin</directories>
+    <directories check_all="yes" realtime="yes">/boot</directories>
+
+    <!-- Noise reduction -->
+    <ignore>/etc/mtab</ignore>
+    <ignore>/etc/hosts.deny</ignore>
+    <ignore>/etc/random-seed</ignore>
+    <ignore type="sregex">.log$|.swp$</ignore>
+
+    <alert_new_files>yes</alert_new_files>
+    <auto_ignore>no</auto_ignore>
+  </syscheck>
+
+  <!-- ===== Security Configuration Assessment (SCA) ===== -->
+  <sca>
+    <enabled>yes</enabled>
+    <scan_on_start>yes</scan_on_start>
+    <interval>12h</interval>
+  </sca>
+
+</ossec_config>

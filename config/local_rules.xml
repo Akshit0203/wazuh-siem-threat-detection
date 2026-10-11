@@ -1,0 +1,70 @@
+<!--
+  Custom rules — /var/ossec/etc/rules/local_rules.xml  (on the MANAGER)
+
+  Custom rule IDs must be >= 100000. After editing, validate and restart:
+
+      /var/ossec/bin/wazuh-logtest
+      sudo systemctl restart wazuh-manager
+
+  Rule levels: 0 = ignore, 3 = low, 5-7 = notice/warning, 10-12 = high, 12+ = critical.
+-->
+
+<group name="local,myapp,authentication,">
+
+  <!-- ===== Custom application rules (use the local_decoder.xml fields) ===== -->
+
+  <!-- Base rule: any decoded myapp AUTH event -->
+  <rule id="100100" level="0">
+    <decoded_as>myapp</decoded_as>
+    <description>myapp: authentication event.</description>
+  </rule>
+
+  <!-- A single failed login -->
+  <rule id="100101" level="5">
+    <if_sid>100100</if_sid>
+    <field name="status">FAILED</field>
+    <description>myapp: authentication failed for user $(user) from $(srcip).</description>
+    <group>authentication_failed,gdpr_IV_35.7.d,</group>
+    <mitre>
+      <id>T1110</id>   <!-- Brute Force -->
+    </mitre>
+  </rule>
+
+  <!-- Correlation: 5+ failures from the same source IP within 120s => brute force -->
+  <rule id="100102" level="12" frequency="5" timeframe="120">
+    <if_matched_sid>100101</if_matched_sid>
+    <same_source_ip />
+    <description>myapp: possible brute-force attack - 5+ failed logins from $(srcip) in 120s.</description>
+    <group>authentication_failures,attack,pci_dss_11.4,</group>
+    <mitre>
+      <id>T1110</id>
+    </mitre>
+  </rule>
+
+  <!-- A successful login immediately following the brute-force pattern => likely compromise -->
+  <rule id="100103" level="12">
+    <if_sid>100100</if_sid>
+    <field name="status">SUCCESS</field>
+    <if_matched_sid>100102</if_matched_sid>
+    <same_source_ip />
+    <description>myapp: successful login from $(srcip) after brute-force - possible account compromise.</description>
+    <group>authentication_success,attack,</group>
+    <mitre>
+      <id>T1078</id>   <!-- Valid Accounts -->
+    </mitre>
+  </rule>
+
+  <!-- ===== Example: tighten an existing SSH detection ===== -->
+  <!-- Escalate SSH brute force on a sensitive lab host to critical.
+       5716 = sshd authentication failed (built-in rule). -->
+  <rule id="100110" level="12" frequency="6" timeframe="120">
+    <if_matched_sid>5716</if_matched_sid>
+    <same_source_ip />
+    <description>SSH brute-force: 6+ failed logins from same source in 120s.</description>
+    <group>authentication_failures,attack,pci_dss_11.4,</group>
+    <mitre>
+      <id>T1110</id>
+    </mitre>
+  </rule>
+
+</group>

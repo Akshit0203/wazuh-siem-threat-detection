@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "If you reference this work, please cite it as below."
+title: "Wazuh SIEM — Deployment, Threat Detection & Security Monitoring"
+abstract: >-
+  A hands-on deployment of the Wazuh open-source SIEM/XDR platform in a virtual
+  lab, demonstrating centralized log collection from Windows and Linux agents,
+  custom rules and decoders, file integrity monitoring, system auditing,
+  MITRE ATT&CK alert mapping, and PCI DSS compliance reporting, validated by
+  simulating attacks and confirming detection.
+type: software
+authors:
+  - family-names: "Akshit"
+    given-names: ""
+keywords:
+  - Wazuh
+  - SIEM
+  - XDR
+  - SOC
+  - blue team
+  - threat detection
+  - detection engineering
+  - log analysis
+  - MITRE ATT&CK
+  - PCI DSS
+  - file integrity monitoring
+  - cybersecurity
+license: MIT
+date-released: "2025-11-15"
